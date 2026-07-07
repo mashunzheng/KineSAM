@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KineSAM: Active Kinematic Correction of SAM 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #333;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .video-container video, .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .section-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #1a202c;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 pb-16">
+
+    <header class="max-w-5xl mx-auto pt-16 pb-10 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-4 leading-tight">
+            <span class="text-blue-600">KineSAM:</span> Active Kinematic Correction of SAM 2<br>for Zero-Shot Dynamic Eye-in-Hand Manipulation
+        </h1>
+        
+        <p class="text-lg text-gray-600 mb-6">
+            </p>
+
+        <div class="flex justify-center space-x-4 mt-6">
+            <a href="KineSAM_paper.pdf" class="flex items-center px-6 py-3 bg-gray-900 text-white font-semibold rounded-lg shadow hover:bg-gray-800 transition">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+                Paper
+            </a>
+            <a href="#code" class="flex items-center px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg shadow hover:bg-gray-300 transition">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.03-2.682-.103-.253-.447-1.27.098-2.646 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.376.202 2.394.1 2.646.64.699 1.026 1.591 1.026 2.682 0 3.841-2.337 4.687-4.565 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"></path></svg>
+                Model / Core Snippets
+            </a>
+        </div>
+    </header>
+
+    <hr class="max-w-4xl mx-auto border-gray-300 my-8">
+
+    <section class="max-w-4xl mx-auto px-4 mb-16">
+        <h2 class="section-title">Abstract</h2>
+        <div class="video-container mb-8">
+            <video controls autoplay loop muted class="rounded-lg">
+                <source src="videos/main_concept_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <p class="text-gray-700 text-justify leading-relaxed text-lg">
+            While the vanilla SAM 2 possesses powerful segmentation capabilities, it faces severe challenges in eye-in-hand manipulation due to the manipulator's ego-motion and frequent field-of-view occlusions. To address these issues, we propose <strong>KineSAM</strong>, a zero-shot framework that couples a Segment Anything Model 2 (SAM 2) based <em>kinematic-aware semantic perceiver (KASP)</em> with an <em>active perception controller (APC)</em>. The APC leverages proprioceptive feedback to correct motion-induced deviations, while SAM 2 supplies zero-shot semantic perception. Furthermore, our dual-confidence memory selection strategy enforces visual-kinematic consensus to suppress distractor-induced identity (ID) switches. Experimental results demonstrate that KineSAM significantly outperforms baselines in both success rates and robustness.
+        </p>
+    </section>
+
+    <section class="max-w-4xl mx-auto px-4 mb-16">
+        <h2 class="section-title">Overview</h2>
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-4">
+            <img src="images/system_overview.png" alt="KineSAM System Overview" class="w-full h-auto rounded">
+        </div>
+        <p class="text-gray-600 text-sm text-center">
+            System overview of KineSAM. The KASP module provides semantic observations, while the APC uses kinematic beliefs to regulate KASP, facilitating target recovery and preventing interference from distractors.
+        </p>
+    </section>
+
+    <section class="max-w-5xl mx-auto px-4 mb-16">
+        <h2 class="section-title">Efficient Training via Neural Perception Surrogate</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <p class="text-gray-700 leading-relaxed mb-4">
+                    Directly deploying SAM 2 in the RL training loop incurs prohibitive computational costs. To isolate foundation model inference from policy optimization, we developed a <strong>lightweight neural network-based surrogate model</strong>. 
+                </p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2">
+                    <li>Models SAM 2's specific noise profiles, bounding box jitter, and ID-switch behaviors.</li>
+                    <li>Reduces PPO training time (8M steps) from <strong>~5 days to approximately 1.3 hours</strong> on a single NVIDIA RTX 4090 GPU.</li>
+                    <li>In MuJoCo simulations, we rigorously equalized the mass and friction of objects and distractors in the MSD task to ensure strictly consistent physical properties for Multi-Similar Distractor validation.</li>
+                </ul>
+            </div>
+            <div class="video-container shadow-md">
+                <video controls autoplay loop muted>
+                    <source src="videos/sim_training_demo.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-4 mb-16">
+        <h2 class="section-title">Real-World Experiment Results</h2>
+        <p class="text-gray-700 mb-8 text-center max-w-3xl mx-auto">
+            We evaluate KineSAM against state-of-the-art baselines (DP, SAM2Act+, SAMURAI+LSTM+PPO) across three challenging scenarios: <strong>DTO</strong> (Dynamic Target Only), <strong>FO</strong> (Frequent Occlusion), and <strong>MSD</strong> (Multi-object Similar Distractor). Below are the comparison rollouts from both eye-in-hand and third-person perspectives.
+        </p>
+
+        <div class="mb-12">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 border-l-4 border-blue-600 pl-3">Task 1: Dynamic Target Only (DTO)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-blue-700">Ours (Eye-in-Hand)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/dto_ours_eye.mp4" type="video/mp4"></video>
+                </div>
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-gray-600">Baseline (Eye-in-Hand)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/dto_base_eye.mp4" type="video/mp4"></video>
+                </div>
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-blue-700">Ours (3rd Person)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/dto_ours_3rd.mp4" type="video/mp4"></video>
+                </div>
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-gray-600">Baseline (3rd Person)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/dto_base_3rd.mp4" type="video/mp4"></video>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-12">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 border-l-4 border-blue-600 pl-3">Task 2: Frequent Occlusion (FO)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-blue-700">Ours (Eye-in-Hand)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/fo_ours_eye.mp4" type="video/mp4"></video>
+                </div>
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-gray-600">Baseline (Eye-in-Hand)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/fo_base_eye.mp4" type="video/mp4"></video>
+                </div>
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-blue-700">Ours (3rd Person)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/fo_ours_3rd.mp4" type="video/mp4"></video>
+                </div>
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-gray-600">Baseline (3rd Person)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/fo_base_3rd.mp4" type="video/mp4"></video>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-12">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 border-l-4 border-blue-600 pl-3">Task 3: Multi-object Similar Distractor (MSD)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-blue-700">Ours (Eye-in-Hand)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/msd_ours_eye.mp4" type="video/mp4"></video>
+                </div>
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-gray-600">Baseline (Eye-in-Hand)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/msd_base_eye.mp4" type="video/mp4"></video>
+                </div>
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-blue-700">Ours (3rd Person)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/msd_ours_3rd.mp4" type="video/mp4"></video>
+                </div>
+                <div class="bg-white rounded p-2 shadow">
+                    <span class="block text-sm font-semibold text-center mb-2 text-gray-600">Baseline (3rd Person)</span>
+                    <video controls loop muted class="w-full rounded"><source src="videos/msd_base_3rd.mp4" type="video/mp4"></video>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-5xl mx-auto px-4 mb-16">
+        <h2 class="section-title text-red-600">Failure Modes Analysis</h2>
+        <p class="text-gray-700 mb-6 text-center">
+            Analyzing edge cases helps us understand the boundaries of current zero-shot VFM-based controllers.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-red-50 p-3 rounded-lg border border-red-100 shadow-sm">
+                <span class="block text-sm font-semibold text-center mb-2 text-red-800">Failure Mode 1: Severe Motion Blur</span>
+                <video controls loop muted class="w-full rounded"><source src="videos/failure_1.mp4" type="video/mp4"></video>
+            </div>
+            <div class="bg-red-50 p-3 rounded-lg border border-red-100 shadow-sm">
+                <span class="block text-sm font-semibold text-center mb-2 text-red-800">Failure Mode 2: Extreme Out-of-View</span>
+                <video controls loop muted class="w-full rounded"><source src="videos/failure_2.mp4" type="video/mp4"></video>
+            </div>
+            <div class="bg-red-50 p-3 rounded-lg border border-red-100 shadow-sm">
+                <span class="block text-sm font-semibold text-center mb-2 text-red-800">Failure Mode 3: Persistent Full Occlusion</span>
+                <video controls loop muted class="w-full rounded"><source src="videos/failure_3.mp4" type="video/mp4"></video>
+            </div>
+            <div class="bg-red-50 p-3 rounded-lg border border-red-100 shadow-sm">
+                <span class="block text-sm font-semibold text-center mb-2 text-red-800">Failure Mode 4: ID Contamination</span>
+                <video controls loop muted class="w-full rounded"><source src="videos/failure_4.mp4" type="video/mp4"></video>
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-4xl mx-auto px-4 mb-16">
+        <h2 class="section-title">Conclusion</h2>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <p class="text-gray-700 leading-relaxed">
+                In this work, we presented <strong>KineSAM</strong>, seamlessly connecting semantic understanding to physical manipulation in a closed-loop fashion. By leveraging a bidirectional cross-module information channel, KineSAM significantly suppresses distractor-induced ID switches and facilitates active target re-acquisition after prolonged occlusions. The introduction of the neural surrogate model drastically improves RL training efficiency. Extensive experiments demonstrate its robustness and zero-shot transferability in dynamic, cluttered real-world environments.
+            </p>
+        </div>
+    </section>
+    
+    <footer class="text-center text-gray-500 text-sm mt-12 pb-8">
+        &copy; 2026 KineSAM Project.
+    </footer>
+
+</body>
+</html>
